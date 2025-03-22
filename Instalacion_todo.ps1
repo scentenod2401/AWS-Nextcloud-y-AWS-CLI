@@ -112,5 +112,3 @@ sudo systemctl enable mariadb
 "@ --region $Region --output text --query 'Instances[0].InstanceId'
 
 Write-Host "Infraestructura creada correctamente."
-
------------------------------------------
