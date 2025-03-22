@@ -86,6 +86,12 @@ sudo apt update -y
 sudo apt upgrade -y
 sudo apt install unzip -y
 sudo apt install apache2 libapache2-mod-php7.4 php7.4 php7.4-cli php7.4-gd php7.4-json php7.4-mbstring php7.4-curl php7.4-xml php7.4-zip php7.4-mysql php7.4-bcmath -y
+# Reiniciar Apache
+echo "Reiniciando Apache..."
+sudo systemctl restart apache2
+# Habilitar Apache para que inicie al arrancar el sistema
+echo "Habilitando Apache..."
+sudo systemctl enable apache2
 sudo systemctl enable ssh
 "@ --region $Region --output text --query 'Instances[0].InstanceId'
 
