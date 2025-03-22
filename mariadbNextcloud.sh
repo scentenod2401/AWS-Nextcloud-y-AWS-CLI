@@ -36,5 +36,3 @@ echo "Reiniciando MariaDB..."
 sudo systemctl restart mariadb
 
 echo "Proceso completado con éxito."
-
-.

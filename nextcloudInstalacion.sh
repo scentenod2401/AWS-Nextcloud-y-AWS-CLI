@@ -21,5 +21,3 @@ echo "Habilitando Apache..."
 sudo systemctl enable apache2
 
 echo "Nextcloud instalado y Apache configurado correctamente."
-
-.
