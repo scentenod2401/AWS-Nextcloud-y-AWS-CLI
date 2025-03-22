@@ -15,6 +15,7 @@ sudo chown -R www-data:www-data /var/www/html/nextcloud
 # Reiniciar Apache
 echo "Reiniciando Apache..."
 sudo systemctl restart apache2
+
 # Habilitar Apache para que inicie al arrancar el sistema
 echo "Habilitando Apache..."
 sudo systemctl enable apache2
