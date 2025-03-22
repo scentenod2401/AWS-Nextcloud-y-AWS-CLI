@@ -52,25 +52,26 @@ $elasticIP = aws ec2 allocate-address --domain vpc --region $Region --output tex
 # Crear NAT Gateway en la subred pública y asociar la Elastic IP
 $natGateway = aws ec2 create-nat-gateway --subnet-id $publicSubnetId --allocation-id $elasticIP --region $Region --output text --query 'NatGateway.NatGatewayId'
 
-# Esperar a que el NAT Gateway esté disponible
-Start-Sleep -Seconds 60
-
-# Obtener el estado del NAT Gateway
-$natGatewayState = aws ec2 describe-nat-gateways --nat-gateway-ids $natGateway --region $Region --output text --query 'NatGateways[0].State'
-
-if ($natGatewayState -eq "available") {
-    Write-Host "El NAT Gateway está disponible y listo."
-} else {
-    Write-Host "El NAT Gateway no está disponible aún. Intentando nuevamente."
+# Esperar hasta que el NAT Gateway esté disponible
+$natGatewayState = "pending"
+while ($natGatewayState -ne "available") {
+    Write-Host "Esperando que el NAT Gateway esté disponible..."
+    Start-Sleep -Seconds 10
+    $natGatewayState = aws ec2 describe-nat-gateways --nat-gateway-ids $natGateway --region $Region --output text --query 'NatGateways[0].State'
 }
+
+Write-Host "El NAT Gateway está disponible y listo."
 
 # Obtener la tabla de rutas de la subred privada
 $routeTablePrivateId = aws ec2 describe-route-tables --filters Name=vpc-id,Values=$vpcId --region $Region --output text --query 'RouteTables[0].RouteTableId'
 
-# Crear una ruta en la tabla de rutas de la subred privada para usar el NAT Gateway
-aws ec2 create-route --route-table-id $routeTablePrivateId --destination-cidr-block 0.0.0.0/0 --nat-gateway-id $natGateway --region $Region
-
-Write-Host "Ruta para el NAT Gateway agregada a la tabla de rutas de la subred privada."
+# Intentar crear la ruta para el NAT Gateway
+try {
+    aws ec2 create-route --route-table-id $routeTablePrivateId --destination-cidr-block 0.0.0.0/0 --nat-gateway-id $natGateway --region $Region
+    Write-Host "Ruta para el NAT Gateway agregada a la tabla de rutas de la subred privada."
+} catch {
+    Write-Host "La ruta para el NAT Gateway ya existe o hubo un error al agregarla. Continuando con el script..."
+}
 
 # Asegurar que DNS está habilitado en la VPC
 aws ec2 modify-vpc-attribute --vpc-id $vpcId --enable-dns-support --region $Region
@@ -108,7 +109,6 @@ sudo apt install mariadb-server -y
 # Habilitar el servicio SSH y MariaDB
 sudo systemctl enable ssh
 sudo systemctl enable mariadb
-
 "@ --region $Region --output text --query 'Instances[0].InstanceId'
 
-Write-Host "Infraestructura creada correctamente." 
+Write-Host "Infraestructura creada correctamente."
